@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+set -ue
+file=$1
+jupyter-nbconvert --to notebook "$file" --output "$(basename $file)" --exec

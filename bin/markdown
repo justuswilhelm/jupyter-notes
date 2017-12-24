@@ -1,0 +1,132 @@
+#!/usr/bin/env python3
+from argparse import ArgumentParser
+import json
+import bs4
+
+
+def write_markdown(cell):
+    """Write markdown cell."""
+    yield from cell["source"]
+
+
+def read_html(html):
+    html = "".join(html)
+    soup = bs4.BeautifulSoup(html, "html5lib")
+    thead = soup.find('thead')
+    tbody = soup.find('tbody')
+    head = [""] * len(thead.find('tr').find_all('th'))
+    rows = []
+
+    for tr in thead.find_all('tr'):
+        for index, th in enumerate(tr.find_all('th')):
+            if th.string:
+                head[index] = th.string
+
+    for tr in tbody.find_all('tr'):
+        row_th = tr.find('th').string
+        row_td = []
+        for td in tr.find_all('td'):
+            row_td.append(td.string)
+        rows.append((row_th, row_td))
+
+    return {
+        'head': head,
+        'rows': rows,
+    }
+
+
+def write_html(html):
+    """Tries to extract html table from html."""
+    extracted = read_html(html)
+    soup = bs4.BeautifulSoup('', 'html.parser')
+    table = soup.new_tag('table')
+    soup.append(table)
+    thead = soup.new_tag('thead')
+    table.append(thead)
+    thead_tr = soup.new_tag('tr')
+    thead.append(thead_tr)
+    for h in extracted['head']:
+        th = soup.new_tag('th')
+        th.string = h
+        thead_tr.append(th)
+
+    tbody = soup.new_tag('tbody')
+    table.append(tbody)
+    for name, row in extracted['rows']:
+        tr = soup.new_tag('tr')
+        tbody.append(tr)
+
+        th = soup.new_tag('th')
+        th.string = name
+        tr.append(th)
+        for d in row:
+            td = soup.new_tag('td')
+            td.string = d
+            tr.append(td)
+
+    yield soup.prettify()
+
+
+def write_output(output):
+    """Write output in code cell."""
+    typ = output["output_type"]
+    if typ == "stream":
+        yield "```\n"
+        yield from output["text"]
+        yield "```"
+    elif typ == "execute_result":
+        data = output["data"]
+        if 'image/png' in data:
+            plain = data['text/plain'][0]
+            yield '<img alt="{}" src="data:image/png;base64,{}"/>'.format(
+                plain,
+                data['image/png'].strip(),
+            )
+        elif 'text/html' in data:
+            yield from write_html(data['text/html'])
+        elif 'text/plain' in data:
+            plain = "{}\n".format(
+                "\n".join(data['text/plain'])
+            )
+            yield "```\n"
+            yield from plain
+            yield "```"
+        else:
+            assert False, output
+
+
+def write_code(cell):
+    """Write code cell."""
+    yield "```python\n"
+    yield from cell["source"]
+    yield "\n"
+    yield "```"
+
+    for output in cell["outputs"]:
+        yield "\n\n"
+        yield from write_output(output)
+
+
+def write_cell(cell):
+    type_mapping = {
+        'markdown': write_markdown,
+        'code': write_code,
+    }
+    return "".join(
+        type_mapping[cell["cell_type"]](cell)
+    )
+
+
+def main(kwargs):
+    path = kwargs.pop('from')
+    with open(path) as fd:
+        notebook = json.load(fd)
+    cells = map(write_cell, notebook["cells"])
+    print("\n\n".join(cells))
+
+
+if __name__ == "__main__":
+    parser = ArgumentParser()
+    parser.add_argument('from')
+    kwargs = vars(parser.parse_args())
+    main(kwargs)
