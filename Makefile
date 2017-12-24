@@ -1,10 +1,15 @@
-NOTEBOOKS := notebooks
+.PHONY: all clean
+
+NOTEBOOKS_PATH := notebooks
 OUT := out
-NOTEBOOKS := $(wildcard $(NOTEBOOKS)/*.ipynb)
-TARGET := $(patsubst $(NOTEBOOKS)/%.ipynb,$(OUT)/%.md,$(NOTEBOOKS))
+NOTEBOOKS := $(wildcard $(NOTEBOOKS_PATH)/*.ipynb)
+TARGET := $(patsubst $(NOTEBOOKS_PATH)/%.ipynb,$(OUT)/%.md,$(NOTEBOOKS))
 
 
 all: $(TARGET)
 
-$(OUT)/%.md: $(NOTEBOOKS)/%.ipynb
-	jupyter-nbconvert --exec --to markdown --output-dir $(dir $@) $<
+$(OUT)/%.md: $(NOTEBOOKS_PATH)/%.ipynb
+	bin/markdown $< > $@
+
+clean:
+	rm $(OUT)/*.md
