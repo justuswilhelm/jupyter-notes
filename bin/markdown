@@ -70,6 +70,7 @@ def write_html(html):
 def write_output(output):
     """Write output in code cell."""
     typ = output["output_type"]
+    yield "__Output:__\n\n"
     if typ == "stream":
         yield "```\n"
         yield from output["text"]
