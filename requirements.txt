@@ -1,6 +1,12 @@
+# Used for all notebooks
+jupyter>=1.0.0
+
+# Notebook conversion
 beautifulsoup4==4.6.0
+
+# Used in some notebooks
 dask[complete]>=0.16.0
 graphviz
-jupyter>=1.0.0
+Pympler==0.5
 numpy>=1.13.3
 pandas>=0.21.0
