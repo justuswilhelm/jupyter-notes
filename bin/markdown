@@ -9,18 +9,36 @@ def write_markdown(cell):
     yield from cell["source"]
 
 
+def read_thead_simple(thead):
+    head = [""] * len(thead.find('tr').find_all('th'))
+
+    for tr in thead.find_all('tr'):
+        for index, th in enumerate(tr.find_all('th')):
+            if th.string:
+                try:
+                    head[index] = th.string
+                except IndexError as e:
+                    raise ValueError from e
+
+    return head
+
+
+def read_thead_nested(thead):
+    return thead
+
+
 def read_html(html):
     html = "".join(html)
     soup = bs4.BeautifulSoup(html, "html5lib")
     thead = soup.find('thead')
     tbody = soup.find('tbody')
-    head = [""] * len(thead.find('tr').find_all('th'))
     rows = []
-
-    for tr in thead.find_all('tr'):
-        for index, th in enumerate(tr.find_all('th')):
-            if th.string:
-                head[index] = th.string
+    try:
+        head = read_thead_simple(thead)
+        head_raw = False
+    except ValueError:
+        head = read_thead_nested(thead)
+        head_raw = True
 
     for tr in tbody.find_all('tr'):
         row_th = tr.find('th').string
@@ -31,6 +49,7 @@ def read_html(html):
 
     return {
         'head': head,
+        'head_raw': head_raw,
         'rows': rows,
     }
 
@@ -43,12 +62,15 @@ def write_html(html):
     soup.append(table)
     thead = soup.new_tag('thead')
     table.append(thead)
-    thead_tr = soup.new_tag('tr')
-    thead.append(thead_tr)
-    for h in extracted['head']:
-        th = soup.new_tag('th')
-        th.string = h
-        thead_tr.append(th)
+    if extracted['head_raw']:
+        thead.append(extracted['head'])
+    else:
+        thead_tr = soup.new_tag('tr')
+        thead.append(thead_tr)
+        for h in extracted['head']:
+            th = soup.new_tag('th')
+            th.string = h
+            thead_tr.append(th)
 
     tbody = soup.new_tag('tbody')
     table.append(tbody)
