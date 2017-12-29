@@ -8,5 +8,8 @@ beautifulsoup4==4.6.0
 dask[complete]>=0.16.0
 graphviz
 Pympler==0.5
+
+# Used in most notebooks
+matplotlib==2.1.1
 numpy>=1.13.3
 pandas>=0.21.0

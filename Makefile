@@ -13,3 +13,6 @@ $(OUT)/%.md: $(NOTEBOOKS_PATH)/%.ipynb
 
 clean:
 	rm $(OUT)/*.md
+
+lint: $(TARGET)
+	proselint out/*.md
