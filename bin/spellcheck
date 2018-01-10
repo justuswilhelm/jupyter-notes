@@ -7,11 +7,11 @@ import aspell
 
 
 speller = aspell.Speller()
-SPLIT_RE = re.compile(r'[\n\[\] ]|(?:[\.,:;?] )')
-SKIP_RE = re.compile(r'http?.+|---|#+|(?:\d\.)+|`.+`|".+"')
+SPLIT_RE = re.compile(r'[\n\[\] ]|(?:[\.,:;?!] )')
+SKIP_RE = re.compile(r'http?.+|---|#+|(?:\d\.)+|`[^`]+`|\$\$.+\$\$|".+"')
+IGNORE_RE = re.compile(r'^```|^`[^`]|[^`]+`$|^\$\$|.+\$\$$')
 CLEAN_RE = re.compile(r'["_\.,:\d]$|__|^["_]|')
-SPLIT_WORD_RE = re.compile(r'[\.?:\-()/]')
-IGNORE_RE = re.compile(r'```.*')
+SPLIT_WORD_RE = re.compile(r'["\.!?:\-()/]')
 ignore_mode = False
 
 
@@ -19,11 +19,10 @@ def check_word(word):
     """Return a list of suggestions if the word is not correct."""
     global ignore_mode
 
+    if SKIP_RE.match(word):
+        return
     if IGNORE_RE.match(word):
         ignore_mode = not ignore_mode
-        return
-
-    if SKIP_RE.match(word):
         return
 
     word = CLEAN_RE.sub('', word)
