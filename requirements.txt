@@ -4,6 +4,9 @@ jupyter>=1.0.0
 # Notebook conversion
 beautifulsoup4==4.6.0
 
+# Notebook spellchecking
+aspell-python-py3
+
 # Used in some notebooks
 dask[complete]>=0.16.0
 graphviz

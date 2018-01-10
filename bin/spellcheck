@@ -1,0 +1,94 @@
+#!/usr/bin/env python3
+import re
+import argparse
+import json
+
+import aspell
+
+
+speller = aspell.Speller()
+SPLIT_RE = re.compile(r'[\n\[\] ]|(?:\. )')
+SKIP_RE = re.compile(r'http?.+|---|#+|(?:\d\.)+|`.+`')
+CLEAN_RE = re.compile(r'[\.,:_\d]$|^[_]|')
+SPLIT_WORD_RE = re.compile(r'[\.\-()/]')
+IGNORE_RE = re.compile(r'```.*')
+ignore_mode = False
+
+
+def check_word(word):
+    """Return a list of suggestions if the word is not correct."""
+    global ignore_mode
+
+    if IGNORE_RE.match(word):
+        ignore_mode = not ignore_mode
+        return
+
+    if SKIP_RE.match(word):
+        return
+
+    print(word)
+    word = CLEAN_RE.sub('', word)
+    print(word)
+    words = SPLIT_WORD_RE.split(word)
+
+    for word in words:
+        if ignore_mode:
+            return
+
+        if word.isnumeric():
+            return
+
+        if speller.check(word):
+            return
+        print("There is a problem with: {}".format(word))
+        print("Suggestions: {}".format(
+            speller.suggest(word)
+        ))
+        add_to_dict = input("Add to dictionary? [yNi] >")
+        if add_to_dict.lower() == "i":
+            print("Ignoring")
+            return
+        if add_to_dict.lower() == "y":
+            speller.addtoPersonal(word)
+            speller.saveAllwords()
+            return
+        raise ValueError("Must add to dictionary to continue")
+
+
+def check_cell(cell):
+    """Check a cell."""
+    for line_index, line in enumerate(cell["source"], start=1):
+        for word_index, word in enumerate(SPLIT_RE.split(line), start=1):
+            try:
+                check_word(word)
+            except ValueError as e:
+                print(line)
+                raise ValueError(
+                    "Line {}, Word {}: Problem with word {}".format(
+                        line_index,
+                        word_index,
+                        word,
+                    )
+                ) from e
+
+
+def main(args):
+    with open(args.file) as fd:
+        content = json.load(fd)
+
+    cells = filter(
+        lambda c: c["cell_type"] == "markdown",
+        content["cells"],
+    )
+    for cell_index, cell in enumerate(cells, start=1):
+        try:
+            check_cell(cell)
+        except Exception as e:
+            raise ValueError("In cell {}".format(cell_index)) from e
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument('file')
+    args = parser.parse_args()
+    main(args)
