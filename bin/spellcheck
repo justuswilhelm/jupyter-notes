@@ -7,10 +7,10 @@ import aspell
 
 
 speller = aspell.Speller()
-SPLIT_RE = re.compile(r'[\n\[\] ]|(?:\. )')
-SKIP_RE = re.compile(r'http?.+|---|#+|(?:\d\.)+|`.+`')
-CLEAN_RE = re.compile(r'[\.,:_\d]$|^[_]|')
-SPLIT_WORD_RE = re.compile(r'[\.\-()/]')
+SPLIT_RE = re.compile(r'[\n\[\] ]|(?:[\.,:;?] )')
+SKIP_RE = re.compile(r'http?.+|---|#+|(?:\d\.)+|`.+`|".+"')
+CLEAN_RE = re.compile(r'["_\.,:\d]$|__|^["_]|')
+SPLIT_WORD_RE = re.compile(r'[\.?:\-()/]')
 IGNORE_RE = re.compile(r'```.*')
 ignore_mode = False
 
@@ -26,9 +26,7 @@ def check_word(word):
     if SKIP_RE.match(word):
         return
 
-    print(word)
     word = CLEAN_RE.sub('', word)
-    print(word)
     words = SPLIT_WORD_RE.split(word)
 
     for word in words:
