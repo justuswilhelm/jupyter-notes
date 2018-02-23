@@ -97,9 +97,17 @@ def write_output(output):
         yield "```\n"
         yield from output["text"]
         yield "```"
+        return
+
+    data = output["data"]
+    if typ == "display_data":
+        plain = data['text/plain'][0]
+        yield '<img alt="{}" src="data:image/png;base64,{}"/>'.format(
+            plain,
+            data['image/png'].strip(),
+        )
     elif typ == "execute_result":
-        data = output["data"]
-        if 'image/png' in data:
+        if "image/png" in data:
             plain = data['text/plain'][0]
             yield '<img alt="{}" src="data:image/png;base64,{}"/>'.format(
                 plain,
@@ -116,6 +124,8 @@ def write_output(output):
             yield "```"
         else:
             assert False, output
+    else:
+        assert False
 
 
 def write_code(cell):
