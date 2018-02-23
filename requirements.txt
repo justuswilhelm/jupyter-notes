@@ -7,12 +7,14 @@ beautifulsoup4==4.6.0
 # Notebook spellchecking
 aspell-python-py3
 
-# Used in some notebooks
-dask[complete]>=0.16.0
-graphviz
-Pympler==0.5
-
 # Used in most notebooks
 matplotlib==2.1.1
 numpy>=1.13.3
 pandas>=0.21.0
+scipy==1.0.0
+
+# Used in some notebooks
+dask[complete]>=0.16.0
+graphviz
+Pympler==0.5
+Pillow
