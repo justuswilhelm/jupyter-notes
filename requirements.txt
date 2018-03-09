@@ -18,3 +18,4 @@ dask[complete]>=0.16.0
 graphviz
 Pympler==0.5
 Pillow
+Flask  # 2018-03-09
