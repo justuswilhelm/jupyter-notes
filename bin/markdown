@@ -1,13 +1,22 @@
 #!/usr/bin/env python3
-from argparse import ArgumentParser
 import json
+import textwrap
+from argparse import ArgumentParser
+
 import bs4
 import tabulate
 
 
+def clean_html(string):
+    """Clean a string from < and >."""
+    return string.replace("<", "").replace(">", "")
+
+
 def write_markdown(cell):
     """Write markdown cell."""
-    yield from cell["source"]
+    for line in cell["source"]:
+        yield textwrap.fill(line, width=79, break_on_hyphens=False)
+        yield "\n"
 
 
 def read_thead_simple(thead):
@@ -111,14 +120,14 @@ def write_output(output):
 
     data = output["data"]
     if typ == "display_data":
-        plain = data['text/plain'][0]
+        plain = clean_html(data['text/plain'][0])
         yield '<img alt="{}" src="data:image/png;base64,{}"/>'.format(
             plain,
             data['image/png'].strip(),
         )
     elif typ == "execute_result":
         if "image/png" in data:
-            plain = data['text/plain'][0]
+            plain = clean_html(data['text/plain'][0])
             yield '<img alt="{}" src="data:image/png;base64,{}"/>'.format(
                 plain,
                 data['image/png'].strip(),
