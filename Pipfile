@@ -19,6 +19,7 @@ Pympler = "==0.5"
 Pillow = "*"
 Flask = "*"
 html5lib = "*"
+tabulate = "*"
 
 [requires]
 python_version = "3.7"

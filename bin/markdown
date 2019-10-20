@@ -2,6 +2,7 @@
 from argparse import ArgumentParser
 import json
 import bs4
+import tabulate
 
 
 def write_markdown(cell):
@@ -57,6 +58,15 @@ def read_html(html):
 def write_html(html):
     """Tries to extract html table from html."""
     extracted = read_html(html)
+    if not extracted['head_raw']:
+        rows = [[f"__{name}__", *row] for name, row in extracted['rows']]
+        yield tabulate.tabulate(
+            rows,
+            headers=extracted['head'],
+            tablefmt="pipe",
+        )
+        return
+
     soup = bs4.BeautifulSoup('', 'html.parser')
     table = soup.new_tag('table')
     soup.append(table)
