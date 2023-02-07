@@ -8,7 +8,6 @@ verify_ssl = true
 [packages]
 jupyter = ">=1.0.0"
 beautifulsoup4 = "*"
-aspell-python-py3 = "*"
 matplotlib = "==2.1.1"
 numpy = ">=1.13.3"
 pandas = ">=0.21.0"
